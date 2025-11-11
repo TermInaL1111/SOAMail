@@ -49,6 +49,27 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+<!--        Nacos-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+            <version>2.2.9.RELEASE</version>
+        </dependency>
+        <!-- 阿里云邮件推送SDK -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>dm20151123</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+<!--        配置 CXF Endpoint-->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
