@@ -1,75 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- 修正1：降级到稳定版 Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.2.0</version> <!-- 稳定版，与 Spring Cloud 2022.0.4 兼容 -->
+        <relativePath/>
     </parent>
+
     <groupId>com.sda</groupId>
     <artifactId>SOAMail</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>SOAMail</name>
     <description>SOAMail</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+
     <properties>
         <java.version>17</java.version>
+        <!-- 修正2：移除冗余的 spring-boot.version，直接用 parent 版本 -->
+        <spring-cloud.version>2022.0.4</spring-cloud.version>
+        <spring-cloud-alibaba.version>2022.0.0.0</spring-cloud-alibaba.version>
     </properties>
+
+    <!-- 修正3：添加依赖管理，统一版本控制 -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web-services</artifactId>
-        </dependency>
+
+        <!-- 修正4：移除 spring-boot-starter-web-services (与 CXF 冲突) -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.springframework.boot</groupId> -->
+        <!--     <artifactId>spring-boot-starter-web-services</artifactId> -->
+        <!-- </dependency> -->
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-<!--        Nacos-->
         <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-            <version>2.2.9.RELEASE</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-        <!-- 阿里云邮件推送SDK -->
+
+        <!-- 修正5：升级 Nacos 到兼容版本 -->
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>-->
+<!--            &lt;!&ndash; 移除 version，由 dependencyManagement 控制 &ndash;&gt;-->
+<!--        </dependency>-->
+
+        <!-- 修正6：添加 bootstrap 支持 (Spring Boot 3 默认禁用) -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-bootstrap</artifactId>-->
+<!--        </dependency>-->
+
+        <!-- 阿里云邮件推送SDK (保持不变) -->
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>dm20151123</artifactId>
             <version>1.6.2</version>
         </dependency>
-<!--        配置 CXF Endpoint-->
+
+        <!-- 修正7：升级 CXF 到最新稳定版 -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-            <version>3.5.5</version>
+            <version>4.0.3</version> <!-- 最新稳定版 -->
         </dependency>
 
-
+        <!-- 修正8：添加 Jakarta EE 9+ 支持 -->
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -82,6 +120,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.34</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -100,5 +139,114 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
+
+        <!--<?xml version="1.0" encoding="UTF-8"?>-->
+        <!--<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"-->
+        <!--         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">-->
+        <!--    <modelVersion>4.0.0</modelVersion>-->
+        <!--    <parent>-->
+        <!--        <groupId>org.springframework.boot</groupId>-->
+        <!--        <artifactId>spring-boot-starter-parent</artifactId>-->
+        <!--        <version>3.5.7</version>-->
+        <!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+        <!--    </parent>-->
+        <!--    <groupId>com.sda</groupId>-->
+        <!--    <artifactId>SOAMail</artifactId>-->
+        <!--    <version>0.0.1-SNAPSHOT</version>-->
+        <!--    <name>SOAMail</name>-->
+        <!--    <description>SOAMail</description>-->
+        <!--    <url/>-->
+        <!--    <licenses>-->
+        <!--        <license/>-->
+        <!--    </licenses>-->
+        <!--    <developers>-->
+        <!--        <developer/>-->
+        <!--    </developers>-->
+        <!--    <scm>-->
+        <!--        <connection/>-->
+        <!--        <developerConnection/>-->
+        <!--        <tag/>-->
+        <!--        <url/>-->
+        <!--    </scm>-->
+        <!--    <properties>-->
+        <!--        <java.version>17</java.version>-->
+        <!--        &lt;!&ndash; 关键：使用兼容 Spring Boot 3.x 的 Spring Cloud 版本 &ndash;&gt;-->
+        <!--        <spring-cloud.version>2022.0.4</spring-cloud.version> &lt;!&ndash; Kilburn SR4 &ndash;&gt;-->
+        <!--&lt;!&ndash;        <spring-boot.version>3.2.0</spring-boot.version> &lt;!&ndash; 与 Spring Cloud 2022.0.4 兼容的 Boot 版本 &ndash;&gt;&ndash;&gt;-->
+        <!--        <spring-cloud-alibaba.version>2022.0.0.0</spring-cloud-alibaba.version> &lt;!&ndash; Nacos 兼容版 &ndash;&gt;-->
+        <!--    </properties>-->
+        <!--    <dependencies>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-web</artifactId>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-web-services</artifactId>-->
+        <!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.projectlombok</groupId>-->
+        <!--            <artifactId>lombok</artifactId>-->
+        <!--            <optional>true</optional>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-test</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
+
+        <!--&lt;!&ndash;        Nacos&ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.alibaba.cloud</groupId>-->
+        <!--            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>-->
+        <!--            <version>2.2.9.RELEASE</version>-->
+        <!--        </dependency>-->
+        <!--        &lt;!&ndash; 阿里云邮件推送SDK &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.aliyun</groupId>-->
+        <!--            <artifactId>dm20151123</artifactId>-->
+        <!--            <version>1.6.2</version>-->
+        <!--        </dependency>-->
+        <!--&lt;!&ndash;        配置 CXF Endpoint&ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.cxf</groupId>-->
+        <!--            <artifactId>cxf-spring-boot-starter-jaxws</artifactId>-->
+        <!--            <version>4.0.0</version>-->
+        <!--        </dependency>-->
+
+
+        <!--    </dependencies>-->
+
+        <!--    <build>-->
+        <!--        <plugins>-->
+        <!--            <plugin>-->
+        <!--                <groupId>org.apache.maven.plugins</groupId>-->
+        <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+        <!--                <configuration>-->
+        <!--                    <annotationProcessorPaths>-->
+        <!--                        <path>-->
+        <!--                            <groupId>org.projectlombok</groupId>-->
+        <!--                            <artifactId>lombok</artifactId>-->
+        <!--                        </path>-->
+        <!--                    </annotationProcessorPaths>-->
+        <!--                </configuration>-->
+        <!--            </plugin>-->
+        <!--            <plugin>-->
+        <!--                <groupId>org.springframework.boot</groupId>-->
+        <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+        <!--                <configuration>-->
+        <!--                    <excludes>-->
+        <!--                        <exclude>-->
+        <!--                            <groupId>org.projectlombok</groupId>-->
+        <!--                            <artifactId>lombok</artifactId>-->
+        <!--                        </exclude>-->
+        <!--                    </excludes>-->
+        <!--                </configuration>-->
+        <!--            </plugin>-->
+        <!--        </plugins>-->
+        <!--    </build>-->
+
+        <!--</project>-->
+

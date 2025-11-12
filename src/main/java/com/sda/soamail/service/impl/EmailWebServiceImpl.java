@@ -6,13 +6,13 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
 
-import javax.jws.WebService;
+import jakarta.jws.WebService;
 
 @Service
 @WebService(
         serviceName = "EmailWebService",
-        targetNamespace = "http://example.com/emailsvc/ws", // 自定义命名空间
-        endpointInterface = "com.sda.soamail.service.impl.EmailWebService"
+        targetNamespace = "http://soamail.sda.com/ws",
+        endpointInterface = "com.sda.soamail.service.EmailWebService"
 )
 public class EmailWebServiceImpl implements EmailWebService {
 
@@ -20,20 +20,20 @@ public class EmailWebServiceImpl implements EmailWebService {
     private MailServiceProxy proxy;
 
     @Override
-    public String sendEmail(String provider, String url, String payload) {
-        boolean result = proxy.sendEmail(provider, url, payload);
+    public String sendEmail( String url, String payload) {
+        boolean result = proxy.sendEmail( url, payload);
         return result ? "Y" : "N";
     }
 
     @Override
-    public String sendEmailBatch(String provider, String[] urls, String payload) {
-        boolean result = proxy.sendEmailBatch(provider, urls, payload);
+    public String sendEmailBatch( String[] urls, String payload) {
+        boolean result = proxy.sendEmailBatch(urls, payload);
         return result ? "Y" : "N";
     }
 
     @Override
-    public String validateEmailAddress(String provider, String url) {
-        boolean result = proxy.validateEmailAddress(provider, url);
+    public String validateEmailAddress( String url) {
+        boolean result = proxy.validateEmailAddress(url);
         return result ? "Y" : "N";
     }
 }

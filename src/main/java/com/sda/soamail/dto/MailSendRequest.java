@@ -9,7 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MailSendRequest {
-    private String toAddress;  // 收件人
-    private String subject;    // 主题
-    private String htmlBody;   // 内容（HTML或纯文本）
+    private String toAddress;    // 收件人
+  //  private String fromAddress;  // 发件人
+   // private String subject;      // 主题
+    private String htmlBody;     // 内容
 }

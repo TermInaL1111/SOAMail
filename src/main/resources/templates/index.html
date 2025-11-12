@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOA 邮件服务客户端</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .email-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .email-item.invalid {
+            background: #fff8f8;
+            border-left: 3px solid #dc3545;
+        }
+        .remove-btn {
+            margin-left: 10px;
+            color: #6c757d;
+            cursor: pointer;
+        }
+        .remove-btn:hover {
+            color: #dc3545;
+        }
+        .validation-badge {
+            margin-left: 10px;
+            font-size: 0.85em;
+            display: none;
+        }
+        .valid {
+            color: #28a745;
+        }
+        .invalid {
+            color: #dc3545;
+        }
+        .btn-add {
+            background: #e9ecef;
+            border: none;
+            color: #495057;
+        }
+        .btn-add:hover {
+            background: #dde0e3;
+        }
+        .result-message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="mb-4">SOA 邮件服务</h1>
+
+    <!-- 邮箱输入区域 -->
+    <div class="mb-3">
+        <label class="form-label">收件人邮箱 <span class="text-muted">(支持批量发送)</span></label>
+        <div id="emailList">
+            <div class="email-item">
+                <input type="email" class="form-control email-input" placeholder="输入邮箱地址" required>
+                <span class="validation-badge"><i class="bi bi-check-circle valid"></i> 有效</span>
+                <span class="validation-badge"><i class="bi bi-x-circle invalid"></i> 无效</span>
+                <div class="remove-btn" title="移除">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-add mt-2" id="addEmailBtn">
+            <i class="bi bi-plus-circle"></i> 添加收件人
+        </button>
+    </div>
+
+    <!-- 邮件主题 -->
+    <div class="mb-3">
+        <label class="form-label">邮件主题</label>
+        <input type="text" class="form-control" id="subject" placeholder="输入邮件主题" value="系统通知">
+    </div>
+
+    <!-- 邮件内容 -->
+    <div class="mb-3">
+        <label class="form-label">邮件内容</label>
+        <textarea class="form-control" id="content" rows="8" placeholder="输入邮件内容 (支持HTML)">&lt;h1&gt;测试邮件&lt;/h1&gt;&lt;p&gt;这是来自SOA邮件服务的测试邮件&lt;/p&gt;</textarea>
+    </div>
+
+    <!-- 结果显示 -->
+    <div class="result-message" id="resultMessage"></div>
+
+    <!-- 按钮区域 -->
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button type="button" class="btn btn-outline-primary" id="validateBtn">
+            <i class="bi bi-check2-circle"></i> 验证邮箱
+        </button>
+        <button type="button" class="btn btn-primary" id="sendBtn">
+            <i class="bi bi-send"></i> 发送邮件
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 添加新邮箱输入框
+        document.getElementById('addEmailBtn').addEventListener('click', function() {
+            const emailList = document.getElementById('emailList');
+            const newItem = document.createElement('div');
+            newItem.className = 'email-item mt-2';
+            newItem.innerHTML = `
+                <input type="email" class="form-control email-input" placeholder="输入邮箱地址" required>
+                <span class="validation-badge"><i class="bi bi-check-circle valid"></i> 有效</span>
+                <span class="validation-badge"><i class="bi bi-x-circle invalid"></i> 无效</span>
+                <div class="remove-btn" title="移除">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+            `;
+            emailList.appendChild(newItem);
+
+            // 添加移除功能
+            newItem.querySelector('.remove-btn').addEventListener('click', function() {
+                // ✅ 修复1: 现在可以移除任何邮箱项（包括第一个）
+                if (emailList.children.length > 1) {
+                    emailList.removeChild(newItem);
+                } else {
+                    // 如果只剩一个，清空内容而不是移除
+                    newItem.querySelector('.email-input').value = '';
+                    // 隐藏验证徽章
+                    newItem.querySelectorAll('.validation-badge').forEach(badge => {
+                        badge.style.display = 'none';
+                    });
+                    // 移除验证样式
+                    newItem.querySelector('.email-input').classList.remove('is-valid', 'is-invalid');
+                }
+            });
+        });
+
+        // 实时验证单个邮箱
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.classList.contains('email-input')) {
+                const email = e.target.value.trim();
+                const validationBadges = e.target.parentElement.querySelectorAll('.validation-badge');
+                const validBadge = validationBadges[0];
+                const invalidBadge = validationBadges[1];
+                const removeBtn = e.target.parentElement.querySelector('.remove-btn');
+
+                if (email === '') {
+                    validBadge.style.display = 'none';
+                    invalidBadge.style.display = 'none';
+                    // 保留移除按钮可见，但可以点击清空
+                    e.target.classList.remove('is-valid', 'is-invalid');
+                    return;
+                }
+
+                // 邮箱验证正则（RFC 5322 标准简化版）
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(email)) {
+                    validBadge.style.display = 'inline';
+                    invalidBadge.style.display = 'none';
+                    removeBtn.style.display = 'inline-block';
+                    e.target.classList.add('is-valid');
+                    e.target.classList.remove('is-invalid');
+                } else {
+                    validBadge.style.display = 'none';
+                    invalidBadge.style.display = 'inline';
+                    removeBtn.style.display = 'inline-block';
+                    e.target.classList.add('is-invalid');
+                    e.target.classList.remove('is-valid');
+                }
+            }
+        });
+
+        // 批量验证所有邮箱
+        document.getElementById('validateBtn').addEventListener('click', function() {
+            const emailInputs = document.querySelectorAll('.email-input');
+            let allValid = true;
+
+            emailInputs.forEach(input => {
+                const email = input.value.trim();
+                if (email === '') return;
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const isValid = emailRegex.test(email);
+
+                const validationBadges = input.parentElement.querySelectorAll('.validation-badge');
+                const validBadge = validationBadges[0];
+                const invalidBadge = validationBadges[1];
+
+                if (isValid) {
+                    validBadge.style.display = 'inline';
+                    invalidBadge.style.display = 'none';
+                    input.classList.add('is-valid');
+                    input.classList.remove('is-invalid');
+                } else {
+                    validBadge.style.display = 'none';
+                    invalidBadge.style.display = 'inline';
+                    input.classList.add('is-invalid');
+                    input.classList.remove('is-valid');
+
+                    allValid = false;
+                }
+            });
+
+            showResult(allValid ? '所有邮箱格式有效' : '存在无效邮箱，请检查', allValid);
+        });
+
+        // 发送邮件
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            const emailInputs = document.querySelectorAll('.email-input');
+            const subject = document.getElementById('subject').value.trim();
+            const content = document.getElementById('content').value.trim();
+
+            // 验证收件人
+            const emails = [];
+            let hasEmpty = false;
+
+            emailInputs.forEach(input => {
+                const email = input.value.trim();
+                if (email !== '') {
+                    emails.push(email);
+                } else {
+                    hasEmpty = true;
+                }
+            });
+
+            if (emails.length === 0) {
+                showResult('请至少输入一个收件人邮箱', false);
+                return;
+            }
+
+            if (hasEmpty) {
+                showResult('已忽略空的邮箱地址', true);
+            }
+
+            if (!subject) {
+                showResult('邮件主题不能为空', false);
+                return;
+            }
+
+            if (!content) {
+                showResult('邮件内容不能为空', false);
+                return;
+            }
+
+            // 禁用按钮，显示加载状态
+            const sendBtn = document.getElementById('sendBtn');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 发送中...';
+
+            // ✅ 修复2: 修正批量发送API调用，匹配后端接口
+            // 后端接口:
+            // @PostMapping("/sendBatch")
+            // public String sendBatch(@RequestBody String[] urls, @RequestParam String payload)
+
+            if (emails.length === 1) {
+                // 单封发送
+                fetch(`/api/email/send?url=${encodeURIComponent(emails[0])}&payload=${encodeURIComponent(content)}`, {
+                    method: 'POST'
+                })
+                    .then(response => response.text())
+                    .then(result => {
+                        sendBtn.disabled = false;
+                        sendBtn.innerHTML = originalText;
+                        showResult(result === 'Y' ? '邮件发送成功！' : '邮件发送失败，请重试', result === 'Y');
+                    })
+                    .catch(error => {
+                        sendBtn.disabled = false;
+                        sendBtn.innerHTML = originalText;
+                        showResult('请求出错: ' + error.message, false);
+                    });
+            } else {
+                // 批量发送 - 修正了API调用
+                fetch(`/api/email/sendBatch?payload=${encodeURIComponent(content)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(emails)
+                })
+                    .then(response => response.text())
+                    .then(result => {
+                        sendBtn.disabled = false;
+                        sendBtn.innerHTML = originalText;
+                        showResult(result === 'Y' ? `成功发送 ${emails.length} 封邮件！` : '批量发送失败，请重试', result === 'Y');
+                    })
+                    .catch(error => {
+                        sendBtn.disabled = false;
+                        sendBtn.innerHTML = originalText;
+                        showResult('请求出错: ' + error.message, false);
+                    });
+            }
+        });
+
+        // 显示结果消息
+        function showResult(message, isSuccess) {
+            const resultDiv = document.getElementById('resultMessage');
+            resultDiv.textContent = message;
+            resultDiv.className = 'result-message';
+            resultDiv.classList.add(isSuccess ? 'success' : 'error');
+            resultDiv.style.display = 'block';
+
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 初始化 - 允许移除第一个邮箱项
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const emailList = document.getElementById('emailList');
+                const item = this.closest('.email-item');
+
+                if (emailList.children.length > 1) {
+                    emailList.removeChild(item);
+                } else {
+                    // 如果只剩一个，清空内容
+                    item.querySelector('.email-input').value = '';
+                    item.querySelectorAll('.validation-badge').forEach(badge => {
+                        badge.style.display = 'none';
+                    });
+                    item.querySelector('.email-input').classList.remove('is-valid', 'is-invalid');
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

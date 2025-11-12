@@ -20,7 +20,7 @@ public class AliyunMailServiceImpl implements MailService {
     @Override
     public boolean sendEmail(String url, String payload) {
         if (!EmailValidator.isValid(url)) return false;
-        return client.sendMail(new MailSendRequest(url, "通知", payload));
+        return client.sendMail(new MailSendRequest(url,  payload));
     }
 
     @Override
@@ -28,7 +28,7 @@ public class AliyunMailServiceImpl implements MailService {
         if (urls == null || urls.length == 0) return false;
         return Arrays.stream(urls)
                 .filter(EmailValidator::isValid)
-                .allMatch(addr -> client.sendMail(new MailSendRequest(addr, "通知", payload)));
+                .allMatch(addr -> client.sendMail(new MailSendRequest(addr,  payload)));
     }
 
     @Override

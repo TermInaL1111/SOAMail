@@ -14,22 +14,17 @@ public class EmailRestController {
     }
 
     @PostMapping("/send")
-    public String send(@RequestParam(required = false) String provider,
-                       @RequestParam String url,
+    public String send(@RequestParam String url,
                        @RequestParam String payload) {
-        return proxy.sendEmail(provider, url, payload) ? "Y" : "N";
+        return proxy.sendEmail( url, payload) ? "Y" : "N";
     }
-
     @PostMapping("/sendBatch")
-    public String sendBatch(@RequestParam(required = false) String provider,
-                            @RequestBody String[] urls,
+    public String sendBatch(@RequestBody String[] urls,
                             @RequestParam String payload) {
-        return proxy.sendEmailBatch(provider, urls, payload) ? "Y" : "N";
+        return proxy.sendEmailBatch(urls, payload) ? "Y" : "N";
     }
-
     @GetMapping("/validate")
-    public String validate(@RequestParam(required = false) String provider,
-                           @RequestParam String url) {
-        return proxy.validateEmailAddress(provider, url) ? "Y" : "N";
+    public String validate(@RequestParam String url) {
+        return proxy.validateEmailAddress(url) ? "Y" : "N";
     }
 }
